@@ -11,10 +11,11 @@ import (
 
 var DB *gorm.DB
 func ConnectDB(){
-	var err error
+	// var err error
 	dsn := os.Getenv("DB_URL")
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	DB = db
+	
 
 	
 
