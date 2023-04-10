@@ -29,5 +29,7 @@ func main(){
 	r.GET("/category/:id", controllers.Category)
 	r.PUT("/category/:id", controllers.CategoryUpdate)
 	r.DELETE("/category/:id", controllers.CategoryDelete)
+
+	// RUN APP
 	r.Run() 
 }

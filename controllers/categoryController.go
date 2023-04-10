@@ -1,19 +1,38 @@
 package controllers
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/padli/go-api-crud/initializers"
 	"github.com/padli/go-api-crud/models"
 )
 
-func CategoryCreate(c *gin.Context){
-	var body struct{
-		Title string 
-		Desc string
-	}
-	c.Bind(&body)
+type categoryValidation struct{
+	Title string  `json:"title" binding:"required"`
+	Desc string   `json:"desc" binding:"required"`
+}
 
-	category := models.Category{Title: body.Title, Desc: body.Desc}
+func CategoryCreate(c *gin.Context){
+
+	var validation categoryValidation
+	err := c.ShouldBindJSON(&validation)
+	if err != nil {
+		
+		errorMessages := []string{}
+		for _, e := range err.(validator.ValidationErrors){
+			errorMessage := fmt.Sprintf("%s : %s", e.Field(), e.ActualTag())
+			errorMessages = append(errorMessages, errorMessage)
+		}
+		c.JSON(http.StatusBadRequest, gin.H{
+			"errors" : errorMessages,
+		})
+		return
+	}
+
+	category := models.Category{Title: validation.Title, Desc: validation.Desc}
 	result := initializers.DB.Create(&category)
 
 	
@@ -54,18 +73,27 @@ func Category (c *gin.Context){
 func CategoryUpdate(c *gin.Context){
 	id := c.Param("id")
 
-	var body struct{
-		Title string 
-		Desc string
+	var validation categoryValidation
+	err := c.ShouldBindJSON(&validation)
+	if err != nil {
+		
+		errorMessages := []string{}
+		for _, e := range err.(validator.ValidationErrors){
+			errorMessage := fmt.Sprintf("%s : %s", e.Field(), e.ActualTag())
+			errorMessages = append(errorMessages, errorMessage)
+		}
+		c.JSON(http.StatusBadRequest, gin.H{
+			"errors" : errorMessages,
+		})
+		return
 	}
-	c.Bind(&body)
 
 	var category models.Category
 	initializers.DB.First(&category, id)
 
 	initializers.DB.Model(&category).Updates(models.Category{
-		Title: body.Title,
-		Desc: body.Desc,
+		Title: validation.Title,
+		Desc: validation.Desc,
 	})
 
 	c.JSON(200, gin.H{

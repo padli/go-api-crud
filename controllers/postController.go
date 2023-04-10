@@ -1,23 +1,41 @@
 package controllers
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/padli/go-api-crud/initializers"
 	"github.com/padli/go-api-crud/models"
 )
 
+type postValidation struct{
+	Title string  `json:"title" binding:"required"`
+	Body string   `json:"body" binding:"required"`
+}
+
+
+
 // create post
-
 func PostCreate (c *gin.Context) {
-	// Get data req body
-	var body struct{
-		Body string
-		Title string
-	}
-	c.Bind(&body)
 
+	var validation postValidation
+	err := c.ShouldBindJSON(&validation)
+	if err != nil {
+		
+		errorMessages := []string{}
+		for _, e := range err.(validator.ValidationErrors){
+			errorMessage := fmt.Sprintf("%s : %s", e.Field(), e.ActualTag())
+			errorMessages = append(errorMessages, errorMessage)
+		}
+		c.JSON(http.StatusBadRequest, gin.H{
+			"errors" : errorMessages,
+		})
+		return
+	}
 	// Creat post data
-	post := models.Post{Title: body.Title, Body: body.Body}
+	post := models.Post{Title: validation.Title, Body: validation.Body}
 	result := initializers.DB.Create(&post)
 
 	if result.Error != nil {
@@ -62,20 +80,28 @@ func PostUpdate(c *gin.Context){
 
 
 	// Get data req body
-	var body struct{
-		Body string
-		Title string
+	var validation postValidation
+	err := c.ShouldBindJSON(&validation)
+	if err != nil {
+		
+		errorMessages := []string{}
+		for _, e := range err.(validator.ValidationErrors){
+			errorMessage := fmt.Sprintf("%s : %s", e.Field(), e.ActualTag())
+			errorMessages = append(errorMessages, errorMessage)
+		}
+		c.JSON(http.StatusBadRequest, gin.H{
+			"errors" : errorMessages,
+		})
+		return
 	}
-	c.Bind(&body)
-
 	// Find the  post were updating
 	var post models.Post
 	initializers.DB.First(&post, id)
 
 	// Update it
 	initializers.DB.Model(&post).Updates(models.Post{
-		Title: body.Title,
-		Body: body.Body,
+		Title: validation.Title,
+		Body: validation.Body,
 	})
 
 	// Response
