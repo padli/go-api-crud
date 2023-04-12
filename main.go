@@ -15,6 +15,8 @@ func init(){
 
 func main(){
 	r := gin.Default()
+	r.Static("/assets", "./assets")
+	r.MaxMultipartMemory = 8 << 20  // 8 MiB
 
 	// POST ENDPOINT
 	r.GET("/posts", controllers.Posts)
@@ -29,6 +31,11 @@ func main(){
 	r.GET("/category/:id", controllers.Category)
 	r.PUT("/category/:id", controllers.CategoryUpdate)
 	r.DELETE("/category/:id", controllers.CategoryDelete)
+
+
+	// USER ENDPOINT
+	r.GET("/users", controllers.GetAllUser)
+	r.POST("/users", controllers.CreateUser)
 
 	// RUN APP
 	r.Run() 

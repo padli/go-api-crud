@@ -1,18 +1,15 @@
 package controllers
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/padli/go-api-crud/initializers"
 	"github.com/padli/go-api-crud/models"
+	"github.com/padli/go-api-crud/validations"
 )
 
-type postValidation struct{
-	Title string  `json:"title" binding:"required"`
-	Body string   `json:"body" binding:"required"`
+type postRequest struct{
+	Title string  `json:"title" form:"title" binding:"required"`
+	Body string   `json:"body" form:"body" binding:"required"`
 }
 
 
@@ -20,22 +17,15 @@ type postValidation struct{
 // create post
 func PostCreate (c *gin.Context) {
 
-	var validation postValidation
-	err := c.ShouldBindJSON(&validation)
+	var req postRequest
+	err := c.ShouldBindJSON(&req)
 	if err != nil {
-		
-		errorMessages := []string{}
-		for _, e := range err.(validator.ValidationErrors){
-			errorMessage := fmt.Sprintf("%s : %s", e.Field(), e.ActualTag())
-			errorMessages = append(errorMessages, errorMessage)
-		}
-		c.JSON(http.StatusBadRequest, gin.H{
-			"errors" : errorMessages,
-		})
+		validations.ValidationMsg(err, c)
 		return
 	}
+	
 	// Creat post data
-	post := models.Post{Title: validation.Title, Body: validation.Body}
+	post := models.Post{Title: req.Title, Body: req.Body}
 	result := initializers.DB.Create(&post)
 
 	if result.Error != nil {
@@ -51,7 +41,13 @@ func PostCreate (c *gin.Context) {
 func Posts(c *gin.Context){
 	// Get posts
 	var posts []models.Post
-	initializers.DB.Find(&posts)
+	err := initializers.DB.Table("posts").Find(&posts).Error
+
+	if err != nil {
+		c.JSON(500, gin.H{
+			"msg" : "internal server error",
+		})
+	}
 
 	// Response
 	c.JSON(200, gin.H{
@@ -65,7 +61,25 @@ func Post(c *gin.Context){
 
 	// Get posts
 	var post models.Post
-	initializers.DB.First(&post, id)
+	// initializers.DB.First(&post, id)
+	err := initializers.DB.Table("posts").Where("id = ?", id).Find(&post).Error
+
+	if err != nil  {
+		c.JSON(500, gin.H{
+			"msg" : "internal server error",
+		})
+
+		return
+	}
+
+	// ID in model must *int
+	if  post.ID == nil {
+		c.JSON(404, gin.H{
+			"msg" : "data not found!",
+		})
+
+		return
+	}
 
 	// Response
 	c.JSON(200, gin.H{
@@ -80,20 +94,14 @@ func PostUpdate(c *gin.Context){
 
 
 	// Get data req body
-	var validation postValidation
+	var validation postRequest
 	err := c.ShouldBindJSON(&validation)
 	if err != nil {
-		
-		errorMessages := []string{}
-		for _, e := range err.(validator.ValidationErrors){
-			errorMessage := fmt.Sprintf("%s : %s", e.Field(), e.ActualTag())
-			errorMessages = append(errorMessages, errorMessage)
-		}
-		c.JSON(http.StatusBadRequest, gin.H{
-			"errors" : errorMessages,
-		})
+		validations.ValidationMsg(err, c)
 		return
 	}
+
+	
 	// Find the  post were updating
 	var post models.Post
 	initializers.DB.First(&post, id)

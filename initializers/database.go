@@ -16,10 +16,11 @@ func ConnectDB(){
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	DB = db
 	
-
 	
 
 	if err != nil {
-		log.Fatal("Failed coonect to database")
+		log.Println("Failed connect to database")
+	} else {
+		log.Println("connected to database")
 	}
 }
