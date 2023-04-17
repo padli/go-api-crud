@@ -4,19 +4,20 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/padli/go-api-crud/controllers"
 	"github.com/padli/go-api-crud/initializers"
+	"github.com/padli/go-api-crud/validations"
 )
 
-
-func init(){
+func init() {
 	initializers.LoadEnvVariables()
 	initializers.ConnectDB()
 }
 
+func main() {
+	// Custom Validations
+	validations.EmailExistValidation()
 
-func main(){
 	r := gin.Default()
-	r.Static("/assets", "./assets")
-	r.MaxMultipartMemory = 8 << 20  // 8 MiB
+	r.Static("/public", "./public")
 
 	// POST ENDPOINT
 	r.GET("/posts", controllers.Posts)
@@ -32,11 +33,13 @@ func main(){
 	r.PUT("/category/:id", controllers.CategoryUpdate)
 	r.DELETE("/category/:id", controllers.CategoryDelete)
 
-
 	// USER ENDPOINT
 	r.GET("/users", controllers.GetAllUser)
+	r.GET("/users/:id", controllers.GetUserById)
+	r.PUT("/users/:id", controllers.UpdateUser)
+	r.DELETE("/users/:id", controllers.DeleteUser)
 	r.POST("/users", controllers.CreateUser)
 
 	// RUN APP
-	r.Run() 
+	r.Run()
 }

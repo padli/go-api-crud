@@ -23,6 +23,8 @@ func getErrorMsg(fe validator.FieldError)  string {
             return "Should be greater than " + fe.Param()
         case "email":
             return "Invalid email " + fe.Param()
+        case "emailExist":
+            return "Email already exist " + fe.Param()
     }
     return "Unknown error"
 }
@@ -35,7 +37,5 @@ func ValidationMsg(err error, c *gin.Context){
                 out[i] = errorMsg{ fe.Field(), getErrorMsg(fe)}
             }
               c.JSON(400, gin.H{"errors": out})
-        
-        }
-        
+        }   
 }
