@@ -21,7 +21,7 @@ func main() {
 
 	// POST ENDPOINT
 	r.GET("/posts", controllers.Posts)
-	r.GET("/posts/:id", controllers.Post)
+	r.GET("/posts/:slug", controllers.Post)
 	r.PUT("/posts/:id", controllers.PostUpdate)
 	r.DELETE("/posts/:id", controllers.PostDelete)
 	r.POST("/posts", controllers.PostCreate)

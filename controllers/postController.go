@@ -17,6 +17,7 @@ import (
 
 type postRequest struct {
 	Title    string                `form:"title" binding:"required"`
+	Slug     string                `form:"slug" binding:"required"`
 	Body     string                `form:"body" binding:"required"`
 	Image    *multipart.FileHeader `form:"image" binding:"required"`
 	ImageUrl string                `form:"image_url"`
@@ -84,6 +85,7 @@ func PostCreate(c *gin.Context) {
 	// Create post data
 	post := models.Post{
 		Title:    req.Title,
+		Slug:     req.Slug,
 		Body:     req.Body,
 		Image:    newFileName,
 		ImageUrl: newURL,
@@ -141,12 +143,12 @@ func Posts(c *gin.Context) {
 
 func Post(c *gin.Context) {
 	// Param
-	id := c.Param("id")
+	slug := c.Param("slug")
 
 	// Get posts
 	var post models.Post
 	// initializers.DB.First(&post, id)
-	err := initializers.DB.Table("posts").Where("id = ?", id).Find(&post).Error
+	err := initializers.DB.Table("posts").Where("slug = ?", slug).Find(&post).Error
 
 	if err != nil {
 		c.JSON(500, gin.H{
@@ -157,7 +159,7 @@ func Post(c *gin.Context) {
 	}
 
 	// ID in model must *int
-	if post.ID == nil {
+	if post.Slug == "" {
 		c.JSON(404, gin.H{
 			"msg": "data not found!",
 		})
@@ -173,11 +175,11 @@ func Post(c *gin.Context) {
 
 func PostUpdate(c *gin.Context) {
 	// Param
-	id := c.Param("id")
+	slug := c.Param("slug")
 
 	// Get data req body
-	var validation postRequest
-	err := c.ShouldBindJSON(&validation)
+	var req postRequest
+	err := c.ShouldBindJSON(&req)
 	if err != nil {
 		validations.ValidationMsg(err, c)
 		return
@@ -185,12 +187,14 @@ func PostUpdate(c *gin.Context) {
 
 	// Find the  post were updating
 	var post models.Post
-	initializers.DB.First(&post, id)
+	initializers.DB.First(&post, slug)
 
 	// Update it
 	initializers.DB.Model(&post).Updates(models.Post{
-		Title: validation.Title,
-		Body:  validation.Body,
+		Title: req.Title,
+		Body:  req.Body,
+		Slug:  req.Slug,
+		Image: req.Image.Filename,
 	})
 
 	// Response
@@ -201,24 +205,25 @@ func PostUpdate(c *gin.Context) {
 
 func PostDelete(c *gin.Context) {
 	// Param
-	id := c.Param("id")
+	slug := c.Param("slug")
 
 	// Get the post
 	var post models.Post
-	if err := initializers.DB.First(&post, id).Error; err != nil {
+	if err := initializers.DB.First(&post, slug).Error; err != nil {
 		c.JSON(404, gin.H{"msg": "post not found"})
-		return
-	}
-
-	// Delete the file
-	if err := os.Remove(fmt.Sprintf("./public/%s", post.Image)); err != nil {
-		c.JSON(400, gin.H{"msg": err.Error()})
 		return
 	}
 
 	// Delete the post
 	if err := initializers.DB.Delete(&post).Error; err != nil {
 		c.JSON(400, gin.H{"msg": "failed to delete post"})
+		return
+	}
+
+	// Delete the file
+	filePath := fmt.Sprintf("./public/%s", post.Image)
+	if err := os.Remove(filePath); err != nil {
+		c.JSON(400, gin.H{"msg": err.Error()})
 		return
 	}
 
