@@ -212,7 +212,7 @@ func PostDelete(c *gin.Context) {
 
 	// Delete the file
 	if err := os.Remove(fmt.Sprintf("./public/%s", post.Image)); err != nil {
-		c.JSON(400, gin.H{"msg": "failed to delete file"})
+		c.JSON(400, gin.H{"msg": err.Error()})
 		return
 	}
 
