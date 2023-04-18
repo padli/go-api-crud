@@ -126,8 +126,9 @@ func Posts(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(500, gin.H{
-			"msg": "internal server error",
+			"msg": err.Error(),
 		})
+		return
 	}
 
 	// Response
@@ -209,15 +210,15 @@ func PostDelete(c *gin.Context) {
 		return
 	}
 
-	// Delete the post
-	if err := initializers.DB.Delete(&post).Error; err != nil {
-		c.JSON(400, gin.H{"msg": "failed to delete post"})
-		return
-	}
-
 	// Delete the file
 	if err := os.Remove(fmt.Sprintf("./public/%s", post.Image)); err != nil {
 		c.JSON(400, gin.H{"msg": "failed to delete file"})
+		return
+	}
+
+	// Delete the post
+	if err := initializers.DB.Delete(&post).Error; err != nil {
+		c.JSON(400, gin.H{"msg": "failed to delete post"})
 		return
 	}
 

@@ -5,11 +5,11 @@ import (
 	"github.com/padli/go-api-crud/models"
 )
 
-func init(){
+func init() {
 	initializers.LoadEnvVariables()
 	initializers.ConnectDB()
 }
 
-func main(){
-	initializers.DB.AutoMigrate(&models.Post{})
+func main() {
+	initializers.DB.AutoMigrate(&models.User{})
 }
