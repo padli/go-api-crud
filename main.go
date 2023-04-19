@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/padli/go-api-crud/controllers"
 	"github.com/padli/go-api-crud/initializers"
+	"github.com/padli/go-api-crud/middleware"
 	"github.com/padli/go-api-crud/validations"
 )
 
@@ -14,13 +15,19 @@ func init() {
 
 func main() {
 	// Custom Validations
-	validations.EmailExistValidation()
+	validations.ExistValidation()
+	validations.FileValidation()
 
 	r := gin.Default()
 	r.Static("/public", "./public")
 
+	auth := r.Group("", middleware.AuthMiddleware)
+
+	// AUTH ENDPOINT
+	r.POST("/login", controllers.Login)
+
 	// POST ENDPOINT
-	r.GET("/posts", controllers.Posts)
+	auth.GET("/posts", controllers.Posts)
 	r.GET("/posts/:slug", controllers.Post)
 	r.PUT("/posts/:id", controllers.PostUpdate)
 	r.DELETE("/posts/:id", controllers.PostDelete)

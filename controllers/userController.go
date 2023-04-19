@@ -6,14 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/padli/go-api-crud/initializers"
 	"github.com/padli/go-api-crud/models"
+	"github.com/padli/go-api-crud/requests"
 	"github.com/padli/go-api-crud/validations"
 )
-
-type userRequest struct {
-	Name    string `json:"name" binding:"required"`
-	Email   string `json:"email" binding:"required,email,emailExist"`
-	Address string `json:"address" binding:"required"`
-}
 
 func GetAllUser(c *gin.Context) {
 	page := c.Query("page")
@@ -78,7 +73,7 @@ func GetUserById(c *gin.Context) {
 }
 
 func CreateUser(c *gin.Context) {
-	var req userRequest
+	var req requests.UserRequest
 
 	err := c.ShouldBindJSON(&req)
 	if err != nil {

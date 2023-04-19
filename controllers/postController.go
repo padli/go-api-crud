@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"mime/multipart"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -12,19 +11,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/padli/go-api-crud/initializers"
 	"github.com/padli/go-api-crud/models"
+	"github.com/padli/go-api-crud/requests"
 	"github.com/padli/go-api-crud/validations"
 )
 
-type postRequest struct {
-	Title    string                `form:"title" binding:"required"`
-	Slug     string                `form:"slug" binding:"required"`
-	Body     string                `form:"body" binding:"required"`
-	Image    *multipart.FileHeader `form:"image" binding:"required"`
-	ImageUrl string                `form:"image_url"`
-}
-
 func PostCreate(c *gin.Context) {
-	var req postRequest
+	var req requests.PostRequest
 	err := c.ShouldBind(&req)
 	if err != nil {
 		validations.ValidationMsg(err, c)
@@ -178,7 +170,7 @@ func PostUpdate(c *gin.Context) {
 	slug := c.Param("slug")
 
 	// Get data req body
-	var req postRequest
+	var req requests.PostRequest
 	err := c.ShouldBindJSON(&req)
 	if err != nil {
 		validations.ValidationMsg(err, c)

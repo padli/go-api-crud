@@ -26,6 +26,10 @@ func getErrorMsg(fe validator.FieldError) string {
 		return "Email already exist " + fe.Param()
 	case "slugUnique":
 		return "Slug already exist " + fe.Param()
+	case "fileExtension":
+		return "Invalid file type " + fe.Param()
+	case "fileSize":
+		return "file size too large " + fe.Param()
 	}
 	return "Unknown error"
 }
