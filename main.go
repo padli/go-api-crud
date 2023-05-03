@@ -24,7 +24,9 @@ func main() {
 	auth := r.Group("", middleware.AuthMiddleware)
 
 	// AUTH ENDPOINT
+	r.POST("/signup", controllers.Signup)
 	r.POST("/login", controllers.Login)
+	r.GET("/validate", middleware.RequiredAuth, controllers.Validate)
 
 	// POST ENDPOINT
 	auth.GET("/posts", controllers.Posts)
@@ -39,13 +41,6 @@ func main() {
 	r.GET("/category/:id", controllers.Category)
 	r.PUT("/category/:id", controllers.CategoryUpdate)
 	r.DELETE("/category/:id", controllers.CategoryDelete)
-
-	// USER ENDPOINT
-	r.GET("/users", controllers.GetAllUser)
-	r.GET("/users/:id", controllers.GetUserById)
-	r.PUT("/users/:id", controllers.UpdateUser)
-	r.DELETE("/users/:id", controllers.DeleteUser)
-	r.POST("/users", controllers.CreateUser)
 
 	// RUN APP
 	r.Run()

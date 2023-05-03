@@ -11,7 +11,7 @@ import (
 	"github.com/padli/go-api-crud/utils"
 )
 
-func Login(c *gin.Context) {
+func LoginD(c *gin.Context) {
 	var req requests.LoginRequest
 
 	if err := c.ShouldBind(&req); err != nil {

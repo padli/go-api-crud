@@ -30,6 +30,8 @@ func getErrorMsg(fe validator.FieldError) string {
 		return "Invalid file type " + fe.Param()
 	case "fileSize":
 		return "file size too large " + fe.Param()
+	case "eqfield":
+		return "Password and Confirm Password do not match" + fe.Param()
 	}
 	return "Unknown error"
 }
